@@ -1,0 +1,96 @@
+﻿using SFML.Graphics;
+using SFML.System;
+using SFML.Window;
+
+namespace Onlive;
+
+public class Window
+{
+    private static readonly Vector2u DefaultSize = new(700, 700);
+    private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), "OnLive - Online game of life");
+    private float _cellSize = 16.0f;
+    private readonly float _cameraSpeed = 4f;
+
+    private readonly Game _game = new();
+    private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
+
+    public Window()
+    {
+        _game.Connect().GetAwaiter().GetResult();
+
+        _window.SetView(_view);
+
+        _window.Closed += (_, _) => _window.Close();
+        _window.MouseButtonPressed += OnMousePressed;
+        _window.MouseWheelScrolled += OnMouseScrolled;
+        _window.KeyPressed += OnKeyPresse;
+    }
+
+    public void Run()
+    {
+        while (_window.IsOpen)
+        {
+            _window.DispatchEvents();
+            _window.Clear();
+
+            RenderBoard();
+
+            _window.Display();
+        }
+    }
+
+    public void RenderBoard()
+    {
+        var activeCells = _game.ActiveCells;
+
+        foreach (var activeCell in activeCells)
+        {
+            _window.Draw(new RectangleShape
+            {
+                FillColor = Color.White,
+                Size = new Vector2f(_cellSize, _cellSize),
+                Position = new Vector2f(activeCell.X * _cellSize, activeCell.Y * _cellSize)
+            });
+        }
+    }
+
+    private void OnMousePressed(object? sender, MouseButtonEventArgs e)
+    {
+        var worldPosition = _window.MapPixelToCoords(new Vector2i(e.X, e.Y));
+        var position = new Vector2i((int)(worldPosition.X / _cellSize), (int)(worldPosition.Y / _cellSize));
+
+        _game.SwitchCellAsync(Helpers.PositionFromVector2(position)).GetAwaiter().GetResult();
+    }
+
+    private void OnMouseScrolled(object? sender, MouseWheelScrollEventArgs e)
+    {
+        if (e.Wheel != Mouse.Wheel.VerticalWheel) return;
+
+        _view.Zoom(1 + e.Delta * 0.1f);
+        _window.SetView(_view);
+    }
+
+    private void OnKeyPresse(object? sender, KeyEventArgs e)
+    {
+        switch (e.Code)
+        {
+            case Keyboard.Key.Q:
+                _view.Move(new Vector2f(-_cameraSpeed, 0));
+                break;
+
+            case Keyboard.Key.D:
+                _view.Move(new Vector2f(_cameraSpeed, 0));
+                break;
+
+            case Keyboard.Key.Z:
+                _view.Move(new Vector2f(0, -_cameraSpeed));
+                break;
+
+            case Keyboard.Key.S:
+                _view.Move(new Vector2f(0, _cameraSpeed));
+                break;
+        }
+
+        _window.SetView(_view);
+    }
+}

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onlive", "Onlive\Onlive.csproj", "{90BA8C4F-E88D-4D5B-9ACF-03488591095C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnliveServer", "OnliveServer\OnliveServer.csproj", "{856AEBD6-3429-4202-B904-2180A732C96A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnliveConstants", "OnliveConstants\OnliveConstants.csproj", "{AC2D8304-EF0D-4A9C-A0E2-8417CF15524B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90BA8C4F-E88D-4D5B-9ACF-03488591095C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90BA8C4F-E88D-4D5B-9ACF-03488591095C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90BA8C4F-E88D-4D5B-9ACF-03488591095C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90BA8C4F-E88D-4D5B-9ACF-03488591095C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{856AEBD6-3429-4202-B904-2180A732C96A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{856AEBD6-3429-4202-B904-2180A732C96A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{856AEBD6-3429-4202-B904-2180A732C96A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{856AEBD6-3429-4202-B904-2180A732C96A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC2D8304-EF0D-4A9C-A0E2-8417CF15524B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC2D8304-EF0D-4A9C-A0E2-8417CF15524B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC2D8304-EF0D-4A9C-A0E2-8417CF15524B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC2D8304-EF0D-4A9C-A0E2-8417CF15524B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
