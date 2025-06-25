@@ -45,6 +45,7 @@ public class Window
     public void RenderBoard()
     {
         var activeCells = _game.ActiveCells;
+        var temporaryCells = _game.TemporaryClickedPositions;
 
         foreach (var activeCell in activeCells)
         {
@@ -53,6 +54,16 @@ public class Window
                 FillColor = Color.White,
                 Size = new Vector2f(_cellSize, _cellSize),
                 Position = new Vector2f(activeCell.X * _cellSize, activeCell.Y * _cellSize)
+            });
+        }
+
+        foreach (var temporaryCell in temporaryCells)
+        {
+            _window.Draw(new RectangleShape
+            {
+                FillColor = new Color(180, 180, 180),
+                Size = new Vector2f(_cellSize, _cellSize),
+                Position = new Vector2f(temporaryCell.X * _cellSize, temporaryCell.Y * _cellSize)
             });
         }
     }
@@ -66,7 +77,7 @@ public class Window
 
         _logger.LogTrace($"Click ! WorldPosition = {position}");
 
-        _game.SwitchCellAsync(Helpers.PositionFromVector2(position)).GetAwaiter().GetResult();
+        _ = _game.SwitchCellAsync(Helpers.PositionFromVector2(position));
     }
 
     private void OnMouseScrolled(object? sender, MouseWheelScrollEventArgs e)

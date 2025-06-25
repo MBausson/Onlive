@@ -44,4 +44,14 @@ public struct Position(int x, int y)
     {
         return new(left + right.X, left + right.Y);
     }
+
+    public static bool operator ==(Position left, Position right)
+    {
+        return left.X == right.X && left.Y == right.Y;
+    }
+
+    public static bool operator !=(Position left, Position right)
+    {
+        return !(left == right);
+    }
 }
