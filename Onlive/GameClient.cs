@@ -10,12 +10,9 @@ public class GameBoardRequestReceivedEventArgs(SendBoardRequest request) : Event
     public SendBoardRequest Request { get; } = request;
 }
 
-public class GameClient
+public class GameClient(string serverIp, int serverPort)
 {
     public event EventHandler<GameBoardRequestReceivedEventArgs> GameBoardRequestReceived;
-
-    private const string ServerIp = "127.0.0.1";
-    private const int ServerPort = 8001;
 
     private readonly ILogger<GameClient> _logger = Helpers.GetLogger<GameClient>();
 
@@ -23,11 +20,11 @@ public class GameClient
 
     public async Task StartAsync()
     {
-        await _client.ConnectAsync(ServerIp, ServerPort);
+        await _client.ConnectAsync(serverIp, serverPort);
 
         _ = ReadFromServerAsync();
 
-        _logger.LogInformation($"Connected to server ! ({ServerIp}:{ServerPort})");
+        _logger.LogInformation($"Connected to server ! ({serverIp}:{serverPort})");
     }
 
     public async Task SendSwitchCellRequest(SwitchCellRequest request)

@@ -12,12 +12,13 @@ public class Window
     private float _cellSize = 16.0f;
     private readonly float _cameraSpeed = 4f;
 
-    private readonly Game _game = new();
+    private readonly Game _game;
     private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
     private readonly ILogger<Window> _logger = Helpers.GetLogger<Window>();
 
-    public Window()
+    public Window(string serverIp, int serverPort)
     {
+        _game = new(serverIp, serverPort);
         _game.Connect().GetAwaiter().GetResult();
 
         _window.SetView(_view);
