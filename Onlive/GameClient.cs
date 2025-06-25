@@ -17,7 +17,7 @@ public class GameClient
     private const string ServerIp = "127.0.0.1";
     private const int ServerPort = 8001;
 
-    private readonly ILogger<GameClient> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<GameClient>();
+    private readonly ILogger<GameClient> _logger = Helpers.GetLogger<GameClient>();
 
     private TcpClient _client = new();
 
@@ -34,6 +34,8 @@ public class GameClient
     {
         var stream = _client.GetStream();
         var writer = new StreamWriter(stream);
+
+        _logger.LogDebug($"Sending SwitchCell request at {request.SwitchedCell}");
 
         await writer.WriteLineAsync(request.ToRequestString());
         await writer.FlushAsync();

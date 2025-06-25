@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using Microsoft.Extensions.Logging;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
@@ -13,6 +14,7 @@ public class Window
 
     private readonly Game _game = new();
     private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
+    private readonly ILogger<Window> _logger = Helpers.GetLogger<Window>();
 
     public Window()
     {
@@ -23,7 +25,7 @@ public class Window
         _window.Closed += (_, _) => _window.Close();
         _window.MouseButtonPressed += OnMousePressed;
         _window.MouseWheelScrolled += OnMouseScrolled;
-        _window.KeyPressed += OnKeyPresse;
+        _window.KeyPressed += OnKeyPressed;
     }
 
     public void Run()
@@ -57,7 +59,11 @@ public class Window
     private void OnMousePressed(object? sender, MouseButtonEventArgs e)
     {
         var worldPosition = _window.MapPixelToCoords(new Vector2i(e.X, e.Y));
-        var position = new Vector2i((int)(worldPosition.X / _cellSize), (int)(worldPosition.Y / _cellSize));
+        var position = new Vector2i(
+            (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
+            (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
+
+        _logger.LogTrace($"Click ! WorldPosition = {position}");
 
         _game.SwitchCellAsync(Helpers.PositionFromVector2(position)).GetAwaiter().GetResult();
     }
@@ -70,7 +76,7 @@ public class Window
         _window.SetView(_view);
     }
 
-    private void OnKeyPresse(object? sender, KeyEventArgs e)
+    private void OnKeyPressed(object? sender, KeyEventArgs e)
     {
         switch (e.Code)
         {
