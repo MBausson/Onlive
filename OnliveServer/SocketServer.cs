@@ -13,6 +13,7 @@ public class SocketServer(string ip, int port) : IDisposable
     public event EventHandler<RequestReceivedEventArgs> RequestReceived = null!;
 
     private readonly TcpListener _listener = new(IPAddress.Parse(ip), port);
+    private readonly List<TcpClient> _clients = [];
 
     public async Task StartAsync()
     {
@@ -22,25 +23,66 @@ public class SocketServer(string ip, int port) : IDisposable
         {
             var client = await _listener.AcceptTcpClientAsync();
 
-            _ = ProcessClient(client);
+            _clients.Add(client);
+
+            _ = ReadClientRequestsAsync(client);
         }
     }
 
-    private async Task ProcessClient(TcpClient client)
+    public async Task SendToAllClientsAsync(Func<TcpClient, string> func)
+    {
+        foreach (var client in _clients)
+        {
+            if (!client.Connected)
+            {
+                EndClientConnection(client);
+                continue;
+            }
+
+            var writer = new StreamWriter(client.GetStream());
+
+            await writer.WriteLineAsync(func(client));
+            await writer.FlushAsync();
+        }
+    }
+
+    private async Task ReadClientRequestsAsync(TcpClient client)
     {
         //  string? clientEndPoint = client.Client.RemoteEndPoint?.ToString();
 
-        var stream = client.GetStream();
-        var reader = new StreamReader(stream);
-
         while (true)
         {
-            string? request = await reader.ReadLineAsync();
+            var request = await ReadRequest(client);
 
             if (request is null) continue;
 
             RequestReceived.Invoke(this, new RequestReceivedEventArgs(request));
         }
+    }
+
+    private async Task<string?> ReadRequest(TcpClient client)
+    {
+        var stream = client.GetStream();
+        var reader = new StreamReader(stream);
+
+        try
+        {
+            return await reader.ReadLineAsync();
+        }
+        catch (IOException)
+        {
+            EndClientConnection(client);
+            
+            return null;
+        }
+    }
+
+    private void EndClientConnection(TcpClient client)
+    {
+        _clients.Remove(client);
+
+        client.Close();
+        client.Dispose();
     }
 
     public void Dispose()

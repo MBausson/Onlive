@@ -22,6 +22,7 @@ public class Server
     {
         _logger.LogInformation($"Server started on {Ip}:{Port}");
 
+        _ = SendGameBoardUpdatesAsync();
         await _socket.StartAsync();
     }
 
@@ -49,6 +50,17 @@ public class Server
             default:
                 _logger.LogWarning($"Could not process request <{action}> => {eventArgs.Request}");
                 return;
+        }
+    }
+
+    private async Task SendGameBoardUpdatesAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(300);
+
+            await _socket.SendToAllClientsAsync(client =>
+                new SendBoardRequest { ActiveCells = _board.ActiveCells }.ToRequestString());
         }
     }
 }
