@@ -20,6 +20,8 @@ public class GameClient(string serverIp, int serverPort)
 
     public async Task StartAsync()
     {
+        _client.NoDelay = true;
+
         _logger.LogDebug($"Connecting to server ({serverIp}:{serverPort})...");
 
         await _client.ConnectAsync(serverIp, serverPort);

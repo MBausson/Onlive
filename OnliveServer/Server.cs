@@ -45,7 +45,7 @@ public class Server
             _board.SwitchValue(switchedCell);
         }
 
-        _logger.LogInformation($"Switched cell at {request.SwitchedCells}");
+        _logger.LogInformation($"Switched {request.SwitchedCells.Count()} cells");
     }
 
     private void OnRequestReceived(object? sender, RequestReceivedEventArgs eventArgs)

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace OnliveServer;
 
@@ -13,7 +14,8 @@ public class SocketServer(string ip, int port) : IDisposable
     public event EventHandler<RequestReceivedEventArgs> RequestReceived = null!;
 
     private readonly TcpListener _listener = new(IPAddress.Parse(ip), port);
-    private readonly List<TcpClient> _clients = [];
+    private readonly List<PlayerClient> _clients = [];
+    private readonly ILogger<SocketServer> _logger = Helpers.GetLogger<SocketServer>();
 
     public async Task StartAsync()
     {
@@ -21,15 +23,19 @@ public class SocketServer(string ip, int port) : IDisposable
 
         while (true)
         {
-            var client = await _listener.AcceptTcpClientAsync();
+            var tcpClient = await _listener.AcceptTcpClientAsync();
+            tcpClient.NoDelay = true;
+
+            var client = new PlayerClient(tcpClient);
+
+            _logger.LogInformation($"New connected client : {tcpClient.Client.RemoteEndPoint}");
 
             _clients.Add(client);
-
             _ = ReadClientRequestsAsync(client);
         }
     }
 
-    public async Task SendToAllClientsAsync(Func<TcpClient, string> func)
+    public async Task SendToAllClientsAsync(Func<PlayerClient, string> func)
     {
         foreach (var client in _clients)
         {
@@ -39,20 +45,20 @@ public class SocketServer(string ip, int port) : IDisposable
                 continue;
             }
 
-            var writer = new StreamWriter(client.GetStream());
+            var writer = new StreamWriter(client.Stream);
 
             await writer.WriteLineAsync(func(client));
             await writer.FlushAsync();
         }
     }
 
-    private async Task ReadClientRequestsAsync(TcpClient client)
+    private async Task ReadClientRequestsAsync(PlayerClient client)
     {
-        //  string? clientEndPoint = client.Client.RemoteEndPoint?.ToString();
+        var reader = new StreamReader(client.Stream);
 
         while (true)
         {
-            var request = await ReadRequest(client);
+            var request = await ReadRequest(client, reader);
 
             if (request is null) continue;
 
@@ -60,11 +66,8 @@ public class SocketServer(string ip, int port) : IDisposable
         }
     }
 
-    private async Task<string?> ReadRequest(TcpClient client)
+    private async Task<string?> ReadRequest(PlayerClient client, StreamReader reader)
     {
-        var stream = client.GetStream();
-        var reader = new StreamReader(stream);
-
         try
         {
             return await reader.ReadLineAsync();
@@ -72,17 +75,18 @@ public class SocketServer(string ip, int port) : IDisposable
         catch (IOException)
         {
             EndClientConnection(client);
-            
+
             return null;
         }
     }
 
-    private void EndClientConnection(TcpClient client)
+    private void EndClientConnection(PlayerClient client)
     {
+        _logger.LogInformation($"Disconnecting client {client.Socket.RemoteEndPoint}");
         _clients.Remove(client);
 
-        client.Close();
-        client.Dispose();
+        client.Socket.Close();
+        client.Socket.Dispose();
     }
 
     public void Dispose()
