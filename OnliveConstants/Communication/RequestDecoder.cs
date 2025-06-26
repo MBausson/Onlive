@@ -48,21 +48,20 @@ public class RequestDecoder
     }
 
     /// <summary>
-    /// Decodes a SwitchCell request. Such a request's payload is composed of a single position
+    /// Decodes a SwitchCells request. Such a request's payload is composed of a single position
     /// </summary>
     /// <example>Request payload: "1;4"</example>
     /// <returns>The SwitchCase data associated with the request</returns>
     /// <remarks>Returns null if the request could not be decoded</remarks>
-    public static SwitchCellRequest? DecodeSwitchCellRequest(string request)
+    public static SwitchCellsRequest? DecodeSwitchCellsRequest(string request)
     {
         if (request.Length < 3) return null;
 
         request = request.Substring(3);
 
-        var position = DecodePosition(request);
-        if (!position.HasValue) return null;
+        IEnumerable<Position> positions = request.Split("|").Select(pair => DecodePosition(pair) ?? Position.Zero);
 
-        return new() { SwitchedCell = position.Value };
+        return new() { SwitchedCells = positions };
     }
 
     private static Position? DecodePosition(string stringPosition)

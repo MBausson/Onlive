@@ -28,12 +28,12 @@ public class GameClient(string serverIp, int serverPort)
         _logger.LogDebug("Connected to server !");
     }
 
-    public async Task SendSwitchCellRequest(SwitchCellRequest request)
+    public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
     {
         var stream = _client.GetStream();
         var writer = new StreamWriter(stream);
 
-        _logger.LogDebug($"Sending SwitchCell request at {request.SwitchedCell}");
+        _logger.LogDebug($"Sending SwitchCells request at {request.SwitchedCells}");
 
         await writer.WriteLineAsync(request.ToRequestString());
         await writer.FlushAsync();

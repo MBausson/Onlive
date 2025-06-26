@@ -9,7 +9,7 @@ public enum RequestAction
     /// <summary>
     /// Used for a client request, asking to switch the value of a cell on the board
     /// </summary>
-    SwitchCell,
+    SwitchCells,
     /// <summary>
     /// Used to indicate that a request could not be decoded
     /// </summary>

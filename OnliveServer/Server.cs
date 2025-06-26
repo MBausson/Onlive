@@ -38,11 +38,14 @@ public class Server
         }
     }
 
-    private void HandleSwitchCellRequest(SwitchCellRequest request)
+    private void HandleSwitchCellsRequest(SwitchCellsRequest request)
     {
-        _board.SwitchValue(request.SwitchedCell);
+        foreach (var switchedCell in request.SwitchedCells)
+        {
+            _board.SwitchValue(switchedCell);
+        }
 
-        _logger.LogInformation($"Switched cell at {request.SwitchedCell}");
+        _logger.LogInformation($"Switched cell at {request.SwitchedCells}");
     }
 
     private void OnRequestReceived(object? sender, RequestReceivedEventArgs eventArgs)
@@ -53,10 +56,10 @@ public class Server
 
         switch (action)
         {
-            case RequestAction.SwitchCell:
-                var switchCellRequest = RequestDecoder.DecodeSwitchCellRequest(eventArgs.Request);
+            case RequestAction.SwitchCells:
+                var switchCellRequest = RequestDecoder.DecodeSwitchCellsRequest(eventArgs.Request);
 
-                if (switchCellRequest.HasValue) HandleSwitchCellRequest(switchCellRequest.Value);
+                if (switchCellRequest.HasValue) HandleSwitchCellsRequest(switchCellRequest.Value);
                 break;
 
             default:

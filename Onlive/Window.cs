@@ -11,6 +11,7 @@ public class Window
     private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), "OnLive - Online game of life");
     private float _cellSize = 16.0f;
     private readonly float _cameraSpeed = 4f;
+    private bool _isStashingCells = false;
 
     private readonly Game _game;
     private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
@@ -45,7 +46,7 @@ public class Window
     public void RenderBoard()
     {
         var activeCells = _game.ActiveCells;
-        var temporaryCells = _game.TemporaryClickedPositions;
+        var temporaryCells = _game.StashedCellsPositions;
 
         foreach (var activeCell in activeCells)
         {
@@ -71,13 +72,21 @@ public class Window
     private void OnMousePressed(object? sender, MouseButtonEventArgs e)
     {
         var worldPosition = _window.MapPixelToCoords(new Vector2i(e.X, e.Y));
-        var position = new Vector2i(
+        var vectorPosition = new Vector2i(
             (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
             (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
+        var position = Helpers.PositionFromVector2(vectorPosition);
 
-        _logger.LogTrace($"Click ! WorldPosition = {position}");
+        _logger.LogTrace($"Click ! WorldPosition = {vectorPosition}");
 
-        _ = _game.SwitchCellAsync(Helpers.PositionFromVector2(position));
+        if (_isStashingCells)
+        {
+            _game.StashCell(position);
+        }
+        else
+        {
+            _ = _game.SwitchCellAsync(position);
+        }
     }
 
     private void OnMouseScrolled(object? sender, MouseWheelScrollEventArgs e)
@@ -106,6 +115,15 @@ public class Window
 
             case Keyboard.Key.S:
                 _view.Move(new Vector2f(0, _cameraSpeed));
+                break;
+
+            case Keyboard.Key.LShift:
+                _isStashingCells = !_isStashingCells;
+                _logger.LogInformation($"Stashing cell is now set to {_isStashingCells}");
+                break;
+
+            case Keyboard.Key.Enter:
+                _ = _game.SwitchStashedCellsAsync();
                 break;
         }
 
