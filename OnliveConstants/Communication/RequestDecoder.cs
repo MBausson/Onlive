@@ -42,7 +42,9 @@ public class RequestDecoder
 
         request = request.Substring(3);
 
-        IEnumerable<Position> positions = request.Split("|").Select(pair => DecodePosition(pair) ?? Position.Zero);
+        IEnumerable<Position> positions = request.Split("|")
+            .Where(s => s.Length != 0)
+            .Select(pair => DecodePosition(pair) ?? Position.Zero);
 
         return new() { ActiveCells = positions };
     }
