@@ -16,6 +16,8 @@ public class Server
     public Server()
     {
         _socket.RequestReceived += OnRequestReceived;
+
+        _ = UpdateGameBoardAsync();
     }
 
     public async Task StartAsync()
@@ -24,6 +26,16 @@ public class Server
 
         _ = SendGameBoardUpdatesAsync();
         await _socket.StartAsync();
+    }
+
+    private async Task UpdateGameBoardAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(300);
+
+            _board.Update();
+        }
     }
 
     private void HandleSwitchCellRequest(SwitchCellRequest request)
