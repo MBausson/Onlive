@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Onlive.Utils;
 using OnliveConstants;
 using OnliveConstants.Requests;
 
@@ -64,9 +65,17 @@ public class Game(string serverIp, int serverPort, Func<Position> currentPositio
 
     private async Task SendCurrentPositionPeriodicallyAsync()
     {
+        Position? lastPosition = null;
+
         while (true)
         {
             await Task.Delay(1000);
+
+            var currentPosition = currentPositionFunc();
+
+            //  Avoid sending the same position over and over
+            if (lastPosition.HasValue && lastPosition.Value == currentPosition) continue;
+            lastPosition = currentPosition;
 
             var request = new SendCurrentPositionRequest{ CurrentPosition = currentPositionFunc() };
             await _client.SendCurrentPositionAsync(request);

@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using Onlive.Utils;
 using OnliveConstants.Communication;
 using OnliveConstants.Requests;
 
@@ -16,7 +17,7 @@ public class GameClient(string serverIp, int serverPort)
 
     private readonly ILogger<GameClient> _logger = Helpers.GetLogger<GameClient>();
 
-    private TcpClient _client = new();
+    private readonly TcpClient _client = new();
     private NetworkStream _stream = null!;
 
     public async Task StartAsync()
@@ -34,7 +35,7 @@ public class GameClient(string serverIp, int serverPort)
 
     public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
     {
-        _logger.LogDebug($"Sending SwitchCells request at {request.SwitchedCells}");
+        _logger.LogDebug($"Sending SwitchCells request for {request.SwitchedCells.Count()} cells");
         await WriteToServerAsync(request.ToRequestString());
     }
 

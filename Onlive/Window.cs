@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Onlive.Utils;
 using OnliveConstants;
 using SFML.Graphics;
 using SFML.System;
@@ -20,7 +21,7 @@ public class Window
 
     public Window(string serverIp, int serverPort)
     {
-        _game = new(serverIp, serverPort, () => Helpers.PositionFromVector2(_view.Center));
+        _game = new(serverIp, serverPort, () => _view.Center.ToPosition());
         _game.Connect().GetAwaiter().GetResult();
 
         _window.SetView(_view);
@@ -76,7 +77,7 @@ public class Window
         var vectorPosition = new Vector2i(
             (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
             (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
-        var position = Helpers.PositionFromVector2(vectorPosition);
+        var position = vectorPosition.ToPosition();
 
         _logger.LogTrace($"Click ! WorldPosition = {vectorPosition}");
 

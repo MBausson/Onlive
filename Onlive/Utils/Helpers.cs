@@ -2,13 +2,10 @@
 using OnliveConstants;
 using SFML.System;
 
-namespace Onlive;
+namespace Onlive.Utils;
 
 public static class Helpers
 {
-    public static Position PositionFromVector2(Vector2i vector) => new(vector.X, vector.Y);
-    public static Position PositionFromVector2(Vector2f vector) => new(vector.X, vector.Y);
-
     public static ILogger<T> GetLogger<T>() => LoggerFactory.CreateLogger<T>();
 
     private static readonly ILoggerFactory LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder => builder.AddConsole());
