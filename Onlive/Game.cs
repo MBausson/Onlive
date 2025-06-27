@@ -5,7 +5,7 @@ using OnliveConstants.Requests;
 
 namespace Onlive;
 
-public class Game(string serverIp, int serverPort)
+public class Game(string serverIp, int serverPort, Func<Position> currentPositionFunc)
 {
     public IReadOnlyCollection<Position> ActiveCells { get; private set; } = [];
     public IEnumerable<Position> StashedCellsPositions => _stashedCellsPositions.Keys;
@@ -19,6 +19,7 @@ public class Game(string serverIp, int serverPort)
         await _client.StartAsync();
 
         _client.GameBoardRequestReceived += OnGameBoardReceived;
+        _ = SendCurrentPositionPeriodicallyAsync();
     }
 
     public async Task SwitchCellAsync(Position position)
@@ -59,5 +60,16 @@ public class Game(string serverIp, int serverPort)
         _logger.LogTrace("Received GameBoard update");
 
         ActiveCells = e.Request.ActiveCells.ToArray();
+    }
+
+    private async Task SendCurrentPositionPeriodicallyAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(1000);
+
+            var request = new SendCurrentPositionRequest{ CurrentPosition = currentPositionFunc() };
+            await _client.SendCurrentPositionAsync(request);
+        }
     }
 }

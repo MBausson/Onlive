@@ -4,8 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace OnliveServer;
 
-public class RequestReceivedEventArgs(string request) : EventArgs
+public class RequestReceivedEventArgs(PlayerClient client, string request) : EventArgs
 {
+    public PlayerClient Client { get; } = client;
     public string Request { get; } = request;
 }
 
@@ -62,7 +63,7 @@ public class SocketServer(string ip, int port) : IDisposable
 
             if (request is null) continue;
 
-            RequestReceived.Invoke(this, new RequestReceivedEventArgs(request));
+            RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request));
         }
     }
 

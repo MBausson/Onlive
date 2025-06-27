@@ -66,6 +66,24 @@ public class RequestDecoder
         return new() { SwitchedCells = positions };
     }
 
+    /// <summary>
+    /// Decodes a SendCurrentPosition request. Such a request's payload is composed of a single position
+    /// </summary>
+    /// <returns>The SendCurrentPositionRequest associated with the request</returns>
+    /// <remarks>Returns null if the request could not be decoded</remarks>
+    /// <example>Request payload: "400;300"</example>
+    public static SendCurrentPositionRequest? DecodeSendCurrentPositionRequest(string request)
+    {
+        if (request.Length < 3) return null;
+
+        request = request.Substring(3);
+        Position? position = DecodePosition(request);
+
+        if (!position.HasValue) return null;
+
+        return new() { CurrentPosition = position.Value};
+    }
+
     private static Position? DecodePosition(string stringPosition)
     {
         var xyPair = stringPosition.Split(";");

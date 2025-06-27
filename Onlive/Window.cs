@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OnliveConstants;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -9,7 +10,7 @@ public class Window
 {
     private static readonly Vector2u DefaultSize = new(700, 700);
     private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), "OnLive - Online game of life");
-    private float _cellSize = 16.0f;
+    private readonly float _cellSize = 16.0f;
     private readonly float _cameraSpeed = 4f;
     private bool _isStashingCells = false;
 
@@ -19,7 +20,7 @@ public class Window
 
     public Window(string serverIp, int serverPort)
     {
-        _game = new(serverIp, serverPort);
+        _game = new(serverIp, serverPort, () => Helpers.PositionFromVector2(_view.Center));
         _game.Connect().GetAwaiter().GetResult();
 
         _window.SetView(_view);

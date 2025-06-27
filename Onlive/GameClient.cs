@@ -17,6 +17,7 @@ public class GameClient(string serverIp, int serverPort)
     private readonly ILogger<GameClient> _logger = Helpers.GetLogger<GameClient>();
 
     private TcpClient _client = new();
+    private NetworkStream _stream = null!;
 
     public async Task StartAsync()
     {
@@ -25,6 +26,7 @@ public class GameClient(string serverIp, int serverPort)
         _logger.LogDebug($"Connecting to server ({serverIp}:{serverPort})...");
 
         await _client.ConnectAsync(serverIp, serverPort);
+        _stream = _client.GetStream();
         _ = ReadFromServerAsync();
 
         _logger.LogDebug("Connected to server !");
@@ -32,8 +34,7 @@ public class GameClient(string serverIp, int serverPort)
 
     public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
     {
-        var stream = _client.GetStream();
-        var writer = new StreamWriter(stream);
+        var writer = new StreamWriter(_stream);
 
         _logger.LogDebug($"Sending SwitchCells request at {request.SwitchedCells}");
 
@@ -41,10 +42,19 @@ public class GameClient(string serverIp, int serverPort)
         await writer.FlushAsync();
     }
 
+    public async Task SendCurrentPositionAsync(SendCurrentPositionRequest request)
+    {
+        var writer = new StreamWriter(_stream);
+
+        _logger.LogDebug($"Sending current position ({request.CurrentPosition})");
+
+        await writer.WriteLineAsync(request.ToRequestString());
+        await writer.FlushAsync();
+    }
+
     private async Task ReadFromServerAsync()
     {
-        var stream = _client.GetStream();
-        var reader = new StreamReader(stream);
+        var reader = new StreamReader(_stream);
 
         while (true)
         {

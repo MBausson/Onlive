@@ -57,9 +57,16 @@ public class Server
         switch (action)
         {
             case RequestAction.SwitchCells:
-                var switchCellRequest = RequestDecoder.DecodeSwitchCellsRequest(eventArgs.Request);
+                var switchCellsRequest = RequestDecoder.DecodeSwitchCellsRequest(eventArgs.Request);
 
-                if (switchCellRequest.HasValue) HandleSwitchCellsRequest(switchCellRequest.Value);
+                if (switchCellsRequest.HasValue) HandleSwitchCellsRequest(switchCellsRequest.Value);
+                break;
+
+            case RequestAction.SendCurrentPosition:
+                var sendCurrentPositionRequest = RequestDecoder.DecodeSendCurrentPositionRequest(eventArgs.Request);
+
+                if (sendCurrentPositionRequest.HasValue)
+                    eventArgs.Client.CurrentPosition = sendCurrentPositionRequest.Value.CurrentPosition;
                 break;
 
             default:

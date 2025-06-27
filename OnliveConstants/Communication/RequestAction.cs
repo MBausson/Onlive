@@ -3,6 +3,10 @@
 public enum RequestAction
 {
     /// <summary>
+    /// Used to indicate that a request could not be decoded
+    /// </summary>
+    Unknown,
+    /// <summary>
     /// Used for a server request, providing board data to a client
     /// </summary>
     SendBoard,
@@ -11,7 +15,7 @@ public enum RequestAction
     /// </summary>
     SwitchCells,
     /// <summary>
-    /// Used to indicate that a request could not be decoded
+    /// Used to indicate to the server the current position of a client
     /// </summary>
-    Unknown
+    SendCurrentPosition,
 }
