@@ -46,10 +46,7 @@ public class SocketServer(string ip, int port) : IDisposable
                 continue;
             }
 
-            var writer = new StreamWriter(client.Stream);
-
-            await writer.WriteLineAsync(func(client));
-            await writer.FlushAsync();
+            await WriteToClientAsync(client, func(client));
         }
     }
 
@@ -59,7 +56,8 @@ public class SocketServer(string ip, int port) : IDisposable
 
         while (true)
         {
-            var request = await ReadRequest(client, reader);
+            var request = await ReadRequestAsync(client, reader);
+            _logger.LogTrace($">>> From {client.Socket.RemoteEndPoint} => {request}");
 
             if (request is null) continue;
 
@@ -67,7 +65,17 @@ public class SocketServer(string ip, int port) : IDisposable
         }
     }
 
-    private async Task<string?> ReadRequest(PlayerClient client, StreamReader reader)
+    private async Task WriteToClientAsync(PlayerClient client, string content)
+    {
+        var writer = new StreamWriter(client.Stream);
+
+        await writer.WriteLineAsync(content);
+        _logger.LogTrace($"<<< To {client.Socket.RemoteEndPoint} => {content}");
+
+        await writer.FlushAsync();
+    }
+
+    private async Task<string?> ReadRequestAsync(PlayerClient client, StreamReader reader)
     {
         try
         {

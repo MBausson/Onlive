@@ -34,21 +34,23 @@ public class GameClient(string serverIp, int serverPort)
 
     public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
     {
-        var writer = new StreamWriter(_stream);
-
         _logger.LogDebug($"Sending SwitchCells request at {request.SwitchedCells}");
-
-        await writer.WriteLineAsync(request.ToRequestString());
-        await writer.FlushAsync();
+        await WriteToServerAsync(request.ToRequestString());
     }
 
     public async Task SendCurrentPositionAsync(SendCurrentPositionRequest request)
     {
+        _logger.LogDebug($"Sending current position ({request.CurrentPosition})");
+        await WriteToServerAsync(request.ToRequestString());
+    }
+
+    private async Task WriteToServerAsync(string content)
+    {
         var writer = new StreamWriter(_stream);
 
-        _logger.LogDebug($"Sending current position ({request.CurrentPosition})");
+        _logger.LogTrace($"<<< {content}");
 
-        await writer.WriteLineAsync(request.ToRequestString());
+        await writer.WriteLineAsync(content);
         await writer.FlushAsync();
     }
 
@@ -59,6 +61,7 @@ public class GameClient(string serverIp, int serverPort)
         while (true)
         {
             var request = await reader.ReadLineAsync();
+            _logger.LogTrace($">>> \n{request}");
 
             if (request is null) continue;
 
