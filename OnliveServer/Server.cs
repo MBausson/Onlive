@@ -6,15 +6,19 @@ namespace OnliveServer;
 
 public class Server
 {
-    private const string Ip = "127.0.0.1";
-    private const int Port = 8001;
+    private readonly string _ip;
+    private readonly int _port;
 
-    private readonly SocketServer _socket = new(Ip, Port);
+    private readonly SocketServer _socket;
     private readonly GameBoard _board = new();
-    private readonly ILogger<Server> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<Server>();
+    private readonly ILogger<Server> _logger = Helpers.GetLogger<Server>();
 
-    public Server()
+    public Server(string serverIp, int serverPort)
     {
+        _ip = serverIp;
+        _port = serverPort;
+        _socket = new SocketServer(_ip, _port);
+
         _socket.RequestReceived += OnRequestReceived;
 
         _ = UpdateGameBoardAsync();
@@ -22,7 +26,7 @@ public class Server
 
     public async Task StartAsync()
     {
-        _logger.LogInformation($"Server started on {Ip}:{Port}");
+        _logger.LogInformation($"Server started on {_ip}:{_port}");
 
         _ = SendGameBoardUpdatesAsync();
         await _socket.StartAsync();
