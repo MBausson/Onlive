@@ -38,3 +38,11 @@ Move around the map
 Zoom-in and Zoom-out
 
 - Scroll up ; Scroll down
+
+**Note:** In order to easily switch several cells, you can enter in Stash mode, place some cells, and hit enter.  
+This will switch several cells at once.
+
+## Game rules
+
+The game rules can be found on [this wikipedia page](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)  
+By default, the game's grid updates every `300ms`.  
