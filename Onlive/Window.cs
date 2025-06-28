@@ -40,12 +40,13 @@ public class Window
             _window.Clear();
 
             RenderBoard();
+            RenderHoveredCell();
 
             _window.Display();
         }
     }
 
-    public void RenderBoard()
+    private void RenderBoard()
     {
         var activeCells = _game.ActiveCells;
         var temporaryCells = _game.StashedCellsPositions;
@@ -69,6 +70,23 @@ public class Window
                 Position = new Vector2f(temporaryCell.X * _cellSize, temporaryCell.Y * _cellSize)
             });
         }
+    }
+
+    private void RenderHoveredCell()
+    {
+        var worldPosition = _window.MapPixelToCoords(Mouse.GetPosition(_window));
+        var vectorPosition = new Vector2i(
+            (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
+            (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
+
+        _window.Draw(new RectangleShape
+        {
+            FillColor = Color.Transparent,
+            Size = new Vector2f(_cellSize, _cellSize),
+            Position = new Vector2f(vectorPosition.X * _cellSize, vectorPosition.Y * _cellSize),
+            OutlineThickness = 1f,
+            OutlineColor = new Color(10, 220, 10, 220)
+        });
     }
 
     private void OnMousePressed(object? sender, MouseButtonEventArgs e)
