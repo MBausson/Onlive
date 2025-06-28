@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Onlive.Graphics;
 using Onlive.Utils;
 using OnliveConstants;
 using SFML.Graphics;
@@ -11,9 +12,10 @@ public class Window
 {
     private static readonly Vector2u DefaultSize = new(700, 700);
     private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), "OnLive - Online game of life");
-    private readonly float _cellSize = 16.0f;
+    private const float CellSize = 16.0f;
+    private readonly Renderables _renderables = new(CellSize);
     private readonly float _cameraSpeed = 4f;
-    private bool _isStashingCells = false;
+    private bool _isStashingCells;
 
     private readonly Game _game;
     private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
@@ -53,48 +55,31 @@ public class Window
 
         foreach (var activeCell in activeCells)
         {
-            _window.Draw(new RectangleShape
-            {
-                FillColor = Color.White,
-                Size = new Vector2f(_cellSize, _cellSize),
-                Position = new Vector2f(activeCell.X * _cellSize, activeCell.Y * _cellSize)
-            });
+            _window.Draw(_renderables.GetActiveCellShape(new Vector2f(activeCell.X, activeCell.Y)));
         }
 
         foreach (var temporaryCell in temporaryCells)
         {
-            _window.Draw(new RectangleShape
-            {
-                FillColor = new Color(180, 180, 180),
-                Size = new Vector2f(_cellSize, _cellSize),
-                Position = new Vector2f(temporaryCell.X * _cellSize, temporaryCell.Y * _cellSize)
-            });
+            _window.Draw(_renderables.GetTemporaryCellShape(new Vector2f(temporaryCell.X, temporaryCell.Y)));
         }
     }
 
     private void RenderHoveredCell()
     {
         var worldPosition = _window.MapPixelToCoords(Mouse.GetPosition(_window));
-        var vectorPosition = new Vector2i(
-            (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
-            (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
+        var vectorPosition = new Vector2f(
+            (int)Math.Round(worldPosition.X / CellSize, MidpointRounding.ToNegativeInfinity),
+            (int)Math.Round(worldPosition.Y / CellSize, MidpointRounding.ToNegativeInfinity));
 
-        _window.Draw(new RectangleShape
-        {
-            FillColor = Color.Transparent,
-            Size = new Vector2f(_cellSize, _cellSize),
-            Position = new Vector2f(vectorPosition.X * _cellSize, vectorPosition.Y * _cellSize),
-            OutlineThickness = 1f,
-            OutlineColor = new Color(10, 220, 10, 220)
-        });
+        _window.Draw(_renderables.GetHoveredCellShape(vectorPosition));
     }
 
     private void OnMousePressed(object? sender, MouseButtonEventArgs e)
     {
         var worldPosition = _window.MapPixelToCoords(new Vector2i(e.X, e.Y));
         var vectorPosition = new Vector2i(
-            (int)Math.Round(worldPosition.X / _cellSize, MidpointRounding.ToNegativeInfinity),
-            (int)Math.Round(worldPosition.Y / _cellSize, MidpointRounding.ToNegativeInfinity));
+            (int)Math.Round(worldPosition.X / CellSize, MidpointRounding.ToNegativeInfinity),
+            (int)Math.Round(worldPosition.Y / CellSize, MidpointRounding.ToNegativeInfinity));
         var position = vectorPosition.ToPosition();
 
         _logger.LogTrace($"Click ! WorldPosition = {vectorPosition}");
@@ -113,7 +98,7 @@ public class Window
     {
         if (e.Wheel != Mouse.Wheel.VerticalWheel) return;
 
-        _view.Zoom(1 + e.Delta * 0.1f);
+        _view.Zoom(1 + e.Delta * -0.1f);
         _window.SetView(_view);
     }
 
