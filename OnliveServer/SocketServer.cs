@@ -66,10 +66,15 @@ public class SocketServer(string ip, int port) : IDisposable
             var request = await ReadRequestAsync(client, reader);
             _logger.LogTrace($">>> From {client.Socket.RemoteEndPoint} => {request}");
 
-            //  Request being null means we should stop reading from the client
-            if (request is null) break;
+            if (request.TerminateConnection) break;
 
-            RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request));
+            if (request.Content is null)
+            {
+                _logger.LogDebug($"Could not read request from {client.Socket.RemoteEndPoint}");
+                continue;
+            }
+
+            RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request.Content));
         }
     }
 
@@ -83,17 +88,17 @@ public class SocketServer(string ip, int port) : IDisposable
         await writer.FlushAsync();
     }
 
-    private async Task<string?> ReadRequestAsync(PlayerClient client, StreamReader reader)
+    private async Task<ReadResult> ReadRequestAsync(PlayerClient client, StreamReader reader)
     {
         try
         {
-            return await reader.ReadLineAsync();
+            return new (false, await reader.ReadLineAsync());
         }
         catch (IOException)
         {
             EndClientConnection(client);
 
-            return null;
+            return new(true, null);
         }
     }
 
@@ -105,4 +110,6 @@ public class SocketServer(string ip, int port) : IDisposable
         client.Socket.Close();
         client.Socket.Dispose();
     }
+
+    private record struct ReadResult(bool TerminateConnection, string? Content);
 }
