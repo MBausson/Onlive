@@ -33,7 +33,7 @@ Switch every cells in the Stash
 
 Move around the map
 
-- Z ; Q ; S ; D
+- Arrow keys
 
 Zoom-in and Zoom-out
 
