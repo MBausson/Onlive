@@ -11,14 +11,13 @@ public class GameBoardRequestReceivedEventArgs(SendBoardRequest request) : Event
     public SendBoardRequest Request { get; } = request;
 }
 
-public class GameClient(string serverIp, int serverPort)
+public class SocketClient(string serverIp, int serverPort)
 {
-    public event EventHandler<GameBoardRequestReceivedEventArgs> GameBoardRequestReceived = null!;
-
-    private readonly ILogger<GameClient> _logger = Logging.GetLogger<GameClient>();
-
     private readonly TcpClient _client = new();
+
+    private readonly ILogger<SocketClient> _logger = Logging.GetLogger<SocketClient>();
     private NetworkStream _stream = null!;
+    public event EventHandler<GameBoardRequestReceivedEventArgs> GameBoardRequestReceived = null!;
 
     public async Task StartAsync()
     {
@@ -79,7 +78,9 @@ public class GameClient(string serverIp, int serverPort)
             case RequestAction.SendBoard:
                 var gameBoardRequest = RequestDecoder.DecodeSendBoardRequest(request);
 
-                if (gameBoardRequest.HasValue) GameBoardRequestReceived.Invoke(this, new (gameBoardRequest.Value));
+                if (gameBoardRequest.HasValue)
+                    GameBoardRequestReceived.Invoke(this,
+                        new GameBoardRequestReceivedEventArgs(gameBoardRequest.Value));
                 break;
 
             default:

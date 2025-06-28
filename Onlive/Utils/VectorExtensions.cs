@@ -7,11 +7,11 @@ public static class VectorExtensions
 {
     public static Position ToPosition(this Vector2f position)
     {
-        return new(position.X, position.Y);
+        return new Position(position.X, position.Y);
     }
 
     public static Position ToPosition(this Vector2i position)
     {
-        return new(position.X, position.Y);
+        return new Position(position.X, position.Y);
     }
 }

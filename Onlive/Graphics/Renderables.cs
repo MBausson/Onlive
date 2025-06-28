@@ -5,7 +5,10 @@ namespace Onlive.Graphics;
 
 public class Renderables
 {
+    private readonly RectangleShape _activeCellRectangleShape;
     private readonly float _cellSize;
+    private readonly RectangleShape _hoveredCellRectangleShape;
+    private readonly RectangleShape _temporaryCellRectangleShape;
 
     public Renderables(float cellSize)
     {
@@ -49,8 +52,4 @@ public class Renderables
         _hoveredCellRectangleShape.Position = position * _cellSize;
         return _hoveredCellRectangleShape;
     }
-
-    private readonly RectangleShape _activeCellRectangleShape;
-    private readonly RectangleShape _temporaryCellRectangleShape;
-    private readonly RectangleShape _hoveredCellRectangleShape;
 }

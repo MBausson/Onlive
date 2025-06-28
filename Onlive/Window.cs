@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Onlive.Graphics;
 using Onlive.Utils;
-using OnliveConstants;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -10,20 +9,24 @@ namespace Onlive;
 
 public class Window
 {
-    private static readonly Vector2u DefaultSize = new(700, 700);
-    private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), "OnLive - Online game of life");
     private const float CellSize = 16.0f;
-    private readonly Renderables _renderables = new(CellSize);
-    private readonly float _cameraSpeed = 4f;
-    private bool _isStashingCells;
+    private const float CameraSpeed = 4f;
+    private const string Title = "OnLive - Online game of life";
+
+    private static readonly Vector2u DefaultSize = new(700, 700);
 
     private readonly Game _game;
-    private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
     private readonly ILogger<Window> _logger = Logging.GetLogger<Window>();
+    private readonly Renderables _renderables = new(CellSize);
+    private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
+
+    private readonly RenderWindow _window = new(new VideoMode(DefaultSize.X, DefaultSize.Y), Title);
+
+    private bool _isStashingCells;
 
     public Window(string serverIp, int serverPort)
     {
-        _game = new(serverIp, serverPort, () => _view.Center.ToPosition());
+        _game = new Game(serverIp, serverPort, () => _view.Center.ToPosition());
         _game.Connect().GetAwaiter().GetResult();
 
         _window.SetView(_view);
@@ -54,14 +57,10 @@ public class Window
         var temporaryCells = _game.StashedCellsPositions;
 
         foreach (var activeCell in activeCells)
-        {
             _window.Draw(_renderables.GetActiveCellShape(new Vector2f(activeCell.X, activeCell.Y)));
-        }
 
         foreach (var temporaryCell in temporaryCells)
-        {
             _window.Draw(_renderables.GetTemporaryCellShape(new Vector2f(temporaryCell.X, temporaryCell.Y)));
-        }
     }
 
     private void RenderHoveredCell()
@@ -85,13 +84,9 @@ public class Window
         _logger.LogTrace($"Click ! WorldPosition = {vectorPosition}");
 
         if (_isStashingCells)
-        {
             _game.StashCell(position);
-        }
         else
-        {
             _ = _game.SwitchCellAsync(position);
-        }
     }
 
     private void OnMouseScrolled(object? sender, MouseWheelScrollEventArgs e)
@@ -107,19 +102,19 @@ public class Window
         switch (e.Code)
         {
             case Keyboard.Key.Left:
-                _view.Move(new Vector2f(-_cameraSpeed, 0));
+                _view.Move(new Vector2f(-CameraSpeed, 0));
                 break;
 
             case Keyboard.Key.Right:
-                _view.Move(new Vector2f(_cameraSpeed, 0));
+                _view.Move(new Vector2f(CameraSpeed, 0));
                 break;
 
             case Keyboard.Key.Up:
-                _view.Move(new Vector2f(0, -_cameraSpeed));
+                _view.Move(new Vector2f(0, -CameraSpeed));
                 break;
 
             case Keyboard.Key.Down:
-                _view.Move(new Vector2f(0, _cameraSpeed));
+                _view.Move(new Vector2f(0, CameraSpeed));
                 break;
 
             case Keyboard.Key.LShift:
