@@ -8,18 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CSFML" Version="2.6.1" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
-      <PackageReference Include="SFML.Graphics" Version="2.6.1" />
-      <PackageReference Include="SFML.Net" Version="2.6.1" />
-      <PackageReference Include="SFML.System" Version="2.6.1" />
-      <PackageReference Include="SFML.Window" Version="2.6.1" />
+        <PackageReference Include="CSFML" Version="2.6.1"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6"/>
+        <PackageReference Include="SFML.Graphics" Version="2.6.1"/>
+        <PackageReference Include="SFML.Net" Version="2.6.1"/>
+        <PackageReference Include="SFML.System" Version="2.6.1"/>
+        <PackageReference Include="SFML.Window" Version="2.6.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OnliveConstants\OnliveConstants.csproj" />
+        <ProjectReference Include="..\OnliveConstants\OnliveConstants.csproj"/>
     </ItemGroup>
 
 </Project>
