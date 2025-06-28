@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using OnliveServer.Utils;
 
 namespace OnliveServer;
 
@@ -12,11 +13,17 @@ public class RequestReceivedEventArgs(PlayerClient client, string request) : Eve
 
 public class SocketServer(string ip, int port) : IDisposable
 {
-    public event EventHandler<RequestReceivedEventArgs> RequestReceived = null!;
+    private readonly List<PlayerClient> _clients = [];
 
     private readonly TcpListener _listener = new(IPAddress.Parse(ip), port);
-    private readonly List<PlayerClient> _clients = [];
-    private readonly ILogger<SocketServer> _logger = Helpers.GetLogger<SocketServer>();
+    private readonly ILogger<SocketServer> _logger = Logging.GetLogger<SocketServer>();
+
+    public void Dispose()
+    {
+        _listener.Dispose();
+    }
+
+    public event EventHandler<RequestReceivedEventArgs> RequestReceived = null!;
 
     public async Task StartAsync()
     {
@@ -96,10 +103,5 @@ public class SocketServer(string ip, int port) : IDisposable
 
         client.Socket.Close();
         client.Socket.Dispose();
-    }
-
-    public void Dispose()
-    {
-        _listener.Dispose();
     }
 }

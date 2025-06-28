@@ -1,24 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using OnliveConstants.Communication;
 using OnliveConstants.Requests;
+using OnliveServer.Utils;
 
 namespace OnliveServer;
 
 public class Server
 {
-    private readonly string _ip;
-    private readonly int _port;
+    private readonly GameBoard _board = new();
+    private readonly string _ip = ServerConfiguration.Current.ServerIp;
+    private readonly ILogger<Server> _logger = Logging.GetLogger<Server>();
+    private readonly int _port = ServerConfiguration.Current.ServerPort;
 
     private readonly SocketServer _socket;
-    private readonly GameBoard _board = new();
-    private readonly ILogger<Server> _logger = Helpers.GetLogger<Server>();
 
-    public Server(string serverIp, int serverPort)
+    public Server()
     {
-        _ip = serverIp;
-        _port = serverPort;
         _socket = new SocketServer(_ip, _port);
-
         _socket.RequestReceived += OnRequestReceived;
 
         _ = UpdateGameBoardAsync();
@@ -44,10 +42,7 @@ public class Server
 
     private void HandleSwitchCellsRequest(SwitchCellsRequest request)
     {
-        foreach (var switchedCell in request.SwitchedCells)
-        {
-            _board.SwitchValue(switchedCell);
-        }
+        foreach (var switchedCell in request.SwitchedCells) _board.SwitchValue(switchedCell);
 
         _logger.LogInformation($"Switched {request.SwitchedCells.Count()} cells");
     }
