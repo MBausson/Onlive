@@ -66,7 +66,8 @@ public class SocketServer(string ip, int port) : IDisposable
             var request = await ReadRequestAsync(client, reader);
             _logger.LogTrace($">>> From {client.Socket.RemoteEndPoint} => {request}");
 
-            if (request is null) continue;
+            //  Request being null means we should stop reading from the client
+            if (request is null) break;
 
             RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request));
         }
