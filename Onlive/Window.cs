@@ -57,10 +57,10 @@ public class Window
         var temporaryCells = _game.StashedCellsPositions;
 
         foreach (var activeCell in activeCells)
-            _window.Draw(_renderables.GetActiveCellShape(new Vector2f(activeCell.X, activeCell.Y)));
+            _window.Draw(_renderables.GetActiveCellShape(new Vector2f(activeCell.X, activeCell.Y) * CellSize));
 
         foreach (var temporaryCell in temporaryCells)
-            _window.Draw(_renderables.GetTemporaryCellShape(new Vector2f(temporaryCell.X, temporaryCell.Y)));
+            _window.Draw(_renderables.GetTemporaryCellShape(new Vector2f(temporaryCell.X, temporaryCell.Y) * CellSize));
     }
 
     private void RenderHoveredCell()
@@ -70,7 +70,7 @@ public class Window
             (int)Math.Round(worldPosition.X / CellSize, MidpointRounding.ToNegativeInfinity),
             (int)Math.Round(worldPosition.Y / CellSize, MidpointRounding.ToNegativeInfinity));
 
-        _window.Draw(_renderables.GetHoveredCellShape(vectorPosition));
+        _window.Draw(_renderables.GetHoveredCellShape(vectorPosition * CellSize));
     }
 
     private void OnMousePressed(object? sender, MouseButtonEventArgs e)
