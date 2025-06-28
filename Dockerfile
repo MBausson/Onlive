@@ -21,4 +21,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "OnliveServer.dll"]
-CMD ["--ip 0.0.0.0", "--port 8001"]
+CMD ["--ip", "0.0.0.0", "--port", "8001"]
