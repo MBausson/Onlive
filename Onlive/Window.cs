@@ -17,7 +17,7 @@ public class Window
 
     private readonly Game _game;
     private readonly View _view = new(new FloatRect(0, 0, DefaultSize.X, DefaultSize.Y));
-    private readonly ILogger<Window> _logger = Helpers.GetLogger<Window>();
+    private readonly ILogger<Window> _logger = Logging.GetLogger<Window>();
 
     public Window(string serverIp, int serverPort)
     {
@@ -103,19 +103,19 @@ public class Window
     {
         switch (e.Code)
         {
-            case Keyboard.Key.Q:
+            case Keyboard.Key.Left:
                 _view.Move(new Vector2f(-_cameraSpeed, 0));
                 break;
 
-            case Keyboard.Key.D:
+            case Keyboard.Key.Right:
                 _view.Move(new Vector2f(_cameraSpeed, 0));
                 break;
 
-            case Keyboard.Key.Z:
+            case Keyboard.Key.Up:
                 _view.Move(new Vector2f(0, -_cameraSpeed));
                 break;
 
-            case Keyboard.Key.S:
+            case Keyboard.Key.Down:
                 _view.Move(new Vector2f(0, _cameraSpeed));
                 break;
 

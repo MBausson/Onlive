@@ -15,7 +15,7 @@ public class GameClient(string serverIp, int serverPort)
 {
     public event EventHandler<GameBoardRequestReceivedEventArgs> GameBoardRequestReceived = null!;
 
-    private readonly ILogger<GameClient> _logger = Helpers.GetLogger<GameClient>();
+    private readonly ILogger<GameClient> _logger = Logging.GetLogger<GameClient>();
 
     private readonly TcpClient _client = new();
     private NetworkStream _stream = null!;

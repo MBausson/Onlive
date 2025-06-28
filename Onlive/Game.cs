@@ -13,7 +13,7 @@ public class Game(string serverIp, int serverPort, Func<Position> currentPositio
 
     private readonly ConcurrentDictionary<Position, bool> _stashedCellsPositions = [];
     private readonly GameClient _client = new(serverIp, serverPort);
-    private readonly ILogger<Game> _logger = Helpers.GetLogger<Game>();
+    private readonly ILogger<Game> _logger = Logging.GetLogger<Game>();
 
     public async Task Connect()
     {
