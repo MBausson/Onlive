@@ -4,7 +4,9 @@ namespace Onlive.Utils;
 
 public static class Logging
 {
-    private static readonly ILoggerFactory CustomLoggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+    private static readonly ILoggerFactory CustomLoggerFactory = LoggerFactory.Create(builder => builder
+        .AddConsole()
+    );
 
     public static ILogger<T> GetLogger<T>()
     {
