@@ -8,7 +8,6 @@ namespace OnliveServer;
 public class Server
 {
     private readonly GameBoard _board = new();
-    private readonly string _ip = ServerConfiguration.Current.ServerIp;
     private readonly ILogger<Server> _logger = Logging.GetLogger<Server>();
     private readonly int _port = ServerConfiguration.Current.ServerPort;
 
@@ -16,7 +15,7 @@ public class Server
 
     public Server()
     {
-        _socket = new SocketServer(_ip, _port);
+        _socket = new SocketServer(_port);
         _socket.RequestReceived += OnRequestReceived;
 
         _ = UpdateGameBoardAsync();

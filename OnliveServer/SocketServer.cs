@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using OnliveServer.Utils;
@@ -12,7 +13,7 @@ public class RequestReceivedEventArgs(PlayerClient client, string request) : Eve
     public string Request { get; } = request;
 }
 
-public class SocketServer(string ip, int port) : IDisposable
+public class SocketServer(int port) : IDisposable
 {
     private readonly Dictionary<IPEndPoint, PlayerClient> _clients = [];
     private readonly UdpClient _listener = new(port);
@@ -27,6 +28,17 @@ public class SocketServer(string ip, int port) : IDisposable
 
     public async Task StartAsync()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // https://stackoverflow.com/a/74327430
+            // https://learn.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#sio_udp_connreset-opcode-setting-i-t3
+            const uint iocIn = 0x80000000U;
+            const uint iocVendor = 0x18000000U;
+            const int sioUdpConnReset = unchecked((int)(iocIn | iocVendor | 12));
+
+            _listener.Client.IOControl(sioUdpConnReset, [ 0x00 ], null);
+        }
+
         _logger.LogInformation($"Server started on {_listener.Client.LocalEndPoint}");
 
         while (true)
@@ -47,6 +59,8 @@ public class SocketServer(string ip, int port) : IDisposable
                 client = new PlayerClient(result.RemoteEndPoint);
                 _clients[result.RemoteEndPoint] = client;
             }
+
+            Console.WriteLine(_clients.Count);
 
             _logger.LogTrace($">>> From {result.RemoteEndPoint} => {request}");
 
