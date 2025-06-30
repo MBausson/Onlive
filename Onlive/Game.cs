@@ -55,7 +55,6 @@ public class Game(string serverIp, int serverPort, Func<Position> currentPositio
     private void OnGameBoardReceived(object? sender, GameBoardRequestReceivedEventArgs e)
     {
         _logger.LogTrace("Received GameBoard update");
-
         ActiveCells = e.Request.ActiveCells.ToArray();
     }
 

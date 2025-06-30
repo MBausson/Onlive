@@ -1,6 +1,9 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Onlive.Utils;
+using OnliveConstants;
 using OnliveConstants.Communication;
 using OnliveConstants.Requests;
 
@@ -13,23 +16,19 @@ public class GameBoardRequestReceivedEventArgs(SendBoardRequest request) : Event
 
 public class SocketClient(string serverIp, int serverPort)
 {
-    private readonly TcpClient _client = new();
-
+    private readonly UdpClient _client = new();
+    private readonly IPEndPoint _serverEndPoint = new(IPAddress.Parse(serverIp), serverPort);
     private readonly ILogger<SocketClient> _logger = Logging.GetLogger<SocketClient>();
-    private NetworkStream _stream = null!;
     public event EventHandler<GameBoardRequestReceivedEventArgs> GameBoardRequestReceived = null!;
 
     public async Task StartAsync()
     {
-        _client.NoDelay = true;
+        _client.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
+        _logger.LogInformation($"Client started (expecting server on {serverIp}:{serverPort})");
 
-        _logger.LogDebug($"Connecting to server ({serverIp}:{serverPort})...");
+        await SendCurrentPositionAsync(new(){ CurrentPosition = Position.Zero});
 
-        await _client.ConnectAsync(serverIp, serverPort);
-        _stream = _client.GetStream();
         _ = ReadFromServerAsync();
-
-        _logger.LogDebug("Connected to server !");
     }
 
     public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
@@ -46,26 +45,29 @@ public class SocketClient(string serverIp, int serverPort)
 
     private async Task WriteToServerAsync(string content)
     {
-        var writer = new StreamWriter(_stream);
+        var data = Encoding.UTF8.GetBytes(content);
+        await _client.SendAsync(data, data.Length, _serverEndPoint);
 
         _logger.LogTrace($"<<< {content}");
-
-        await writer.WriteLineAsync(content);
-        await writer.FlushAsync();
     }
 
     private async Task ReadFromServerAsync()
     {
-        var reader = new StreamReader(_stream);
-
         while (true)
         {
-            var request = await reader.ReadLineAsync();
-            _logger.LogTrace($">>> \n{request}");
+            var request = await _client.ReceiveAsync();
 
-            if (request is null) continue;
+            if (!Equals(request.RemoteEndPoint, _serverEndPoint))
+            {
+                _logger.LogCritical($"Received an unexpected request from {request.RemoteEndPoint}");
+            }
 
-            ProcessRequest(request);
+            var content = Encoding.UTF8.GetString(request.Buffer);
+            _logger.LogTrace($">>> \n{content}");
+
+            if (string.IsNullOrWhiteSpace(content)) continue;
+
+            ProcessRequest(content);
         }
     }
 
