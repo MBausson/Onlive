@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using OnliveServer.Utils;
 
@@ -11,11 +13,10 @@ public class RequestReceivedEventArgs(PlayerClient client, string request) : Eve
     public string Request { get; } = request;
 }
 
-public class SocketServer(string ip, int port) : IDisposable
+public class SocketServer(int port) : IDisposable
 {
-    private readonly List<PlayerClient> _clients = [];
-
-    private readonly TcpListener _listener = new(IPAddress.Parse(ip), port);
+    private readonly Dictionary<IPEndPoint, PlayerClient> _clients = [];
+    private readonly UdpClient _listener = new(port);
     private readonly ILogger<SocketServer> _logger = Logging.GetLogger<SocketServer>();
 
     public void Dispose()
@@ -27,89 +28,59 @@ public class SocketServer(string ip, int port) : IDisposable
 
     public async Task StartAsync()
     {
-        _listener.Start();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // https://stackoverflow.com/a/74327430
+            // https://learn.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#sio_udp_connreset-opcode-setting-i-t3
+            const uint iocIn = 0x80000000U;
+            const uint iocVendor = 0x18000000U;
+            const int sioUdpConnReset = unchecked((int)(iocIn | iocVendor | 12));
+
+            _listener.Client.IOControl(sioUdpConnReset, [ 0x00 ], null);
+        }
+
+        _logger.LogInformation($"Server started on {_listener.Client.LocalEndPoint}");
 
         while (true)
         {
-            var tcpClient = await _listener.AcceptTcpClientAsync();
-            tcpClient.NoDelay = true;
+            var result = await _listener.ReceiveAsync();
+            var request = Encoding.UTF8.GetString(result.Buffer);
 
-            var client = new PlayerClient(tcpClient);
+            if (request.Length == 0) continue;
 
-            _logger.LogInformation($"New connected client : {tcpClient.Client.RemoteEndPoint}");
+            PlayerClient client;
 
-            _clients.Add(client);
-            _ = ReadClientRequestsAsync(client);
+            if (_clients.ContainsKey(result.RemoteEndPoint))
+            {
+                client = _clients[result.RemoteEndPoint];
+            }
+            else
+            {
+                client = new PlayerClient(result.RemoteEndPoint);
+                _clients[result.RemoteEndPoint] = client;
+            }
+
+            Console.WriteLine(_clients.Count);
+
+            _logger.LogTrace($">>> From {result.RemoteEndPoint} => {request}");
+
+            RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request));
         }
     }
 
     public async Task SendToAllClientsAsync(Func<PlayerClient, string> func)
     {
-        foreach (var client in _clients)
+        foreach (var (_, client) in _clients)
         {
-            if (!client.Connected)
-            {
-                EndClientConnection(client);
-                continue;
-            }
-
             await WriteToClientAsync(client, func(client));
-        }
-    }
-
-    private async Task ReadClientRequestsAsync(PlayerClient client)
-    {
-        var reader = new StreamReader(client.Stream);
-
-        while (true)
-        {
-            var request = await ReadRequestAsync(client, reader);
-            _logger.LogTrace($">>> From {client.Socket.RemoteEndPoint} => {request}");
-
-            if (request.TerminateConnection) break;
-
-            if (request.Content is null)
-            {
-                _logger.LogDebug($"Could not read request from {client.Socket.RemoteEndPoint}");
-                continue;
-            }
-
-            RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request.Content));
         }
     }
 
     private async Task WriteToClientAsync(PlayerClient client, string content)
     {
-        var writer = new StreamWriter(client.Stream);
+        var data = Encoding.UTF8.GetBytes(content);
 
-        await writer.WriteLineAsync(content);
-        _logger.LogTrace($"<<< To {client.Socket.RemoteEndPoint} => {content}");
-
-        await writer.FlushAsync();
+        await _listener.SendAsync(data, client.EndPoint);
+        _logger.LogTrace($"<<< To {client.EndPoint} => {content}");
     }
-
-    private async Task<ReadResult> ReadRequestAsync(PlayerClient client, StreamReader reader)
-    {
-        try
-        {
-            return new (false, await reader.ReadLineAsync());
-        }
-        catch (IOException)
-        {
-            EndClientConnection(client);
-
-            return new(true, null);
-        }
-    }
-
-    private void EndClientConnection(PlayerClient client)
-    {
-        _logger.LogInformation($"Disconnecting client {client.Socket.RemoteEndPoint}");
-        _clients.Remove(client);
-
-        client.Socket.Close();
-        client.Socket.Dispose();
-    }
-
-    private record struct ReadResult(bool TerminateConnection, string? Content);
 }

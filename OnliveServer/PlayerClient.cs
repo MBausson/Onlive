@@ -1,13 +1,10 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
 using OnliveConstants;
 
 namespace OnliveServer;
 
-public class PlayerClient(TcpClient client)
+public class PlayerClient(IPEndPoint endPoint)
 {
-    public NetworkStream Stream { get; } = client.GetStream();
-    public Socket Socket { get; } = client.Client;
+    public IPEndPoint EndPoint { get; } = endPoint;
     public Position CurrentPosition { get; set; }
-
-    public bool Connected => client.Connected;
 }
