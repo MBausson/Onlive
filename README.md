@@ -14,7 +14,7 @@ The default port used is `8001` : this can be changed in the `Dockerfile`, via t
 ### Client
 
 You will need `.NET 9.0` in order to build this application.
-In the `Online` project directory, run this command: `dotnet build --configuration Release`. The build output should be in `bin\Release\net9.0`.
+In the `Onlive` project directory, run this command: `dotnet build --configuration Release`. The build output should be in `bin\Release\net9.0`.
 In that directory, run this command: `.\Onlive.exe <IP> <PORT>` (IP & Port refer to the server, default values are `127.0.0.1` & `8001`)
 
 ## How to play
