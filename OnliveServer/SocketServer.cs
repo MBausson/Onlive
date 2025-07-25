@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using OnliveConstants.Requests;
 using OnliveServer.Utils;
 
 namespace OnliveServer;
@@ -41,6 +42,8 @@ public class SocketServer(int port) : IDisposable
 
         _logger.LogInformation($"Server started on {_listener.Client.LocalEndPoint}");
 
+        _ = TimeoutClientsAsync();
+
         while (true)
         {
             var result = await _listener.ReceiveAsync();
@@ -60,8 +63,6 @@ public class SocketServer(int port) : IDisposable
                 _clients[result.RemoteEndPoint] = client;
             }
 
-            Console.WriteLine(_clients.Count);
-
             _logger.LogTrace($">>> From {result.RemoteEndPoint} => {request}");
 
             RequestReceived.Invoke(this, new RequestReceivedEventArgs(client, request));
@@ -73,6 +74,23 @@ public class SocketServer(int port) : IDisposable
         foreach (var (_, client) in _clients)
         {
             await WriteToClientAsync(client, func(client));
+        }
+    }
+
+    private async Task TimeoutClientsAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(PingRequest.ServerTimeout);
+
+            foreach (var (ip, client) in _clients)
+            {
+                if (client.ShouldDisconnect)
+                {
+                    _logger.LogInformation($"Closing connection with client {ip}");
+                    _clients.Remove(ip);
+                }
+            }
         }
     }
 

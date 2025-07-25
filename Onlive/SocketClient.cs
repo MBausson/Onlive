@@ -29,6 +29,7 @@ public class SocketClient(string serverIp, int serverPort)
         await SendCurrentPositionAsync(new(){ CurrentPosition = Position.Zero});
 
         _ = ReadFromServerAsync();
+        _ = SendPingsAsync();
     }
 
     public async Task SendSwitchCellsRequest(SwitchCellsRequest request)
@@ -49,6 +50,15 @@ public class SocketClient(string serverIp, int serverPort)
         await _client.SendAsync(data, data.Length, _serverEndPoint);
 
         _logger.LogTrace($"<<< {content}");
+    }
+
+    private async Task SendPingsAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(PingRequest.ClientInterval);
+            await WriteToServerAsync(new PingRequest().ToRequestString());
+        }
     }
 
     private async Task ReadFromServerAsync()

@@ -55,6 +55,10 @@ public class Server
 
         switch (action)
         {
+            case RequestAction.Ping:
+                eventArgs.Client.LastPing = DateTimeOffset.Now;
+                break;
+
             case RequestAction.SwitchCells:
                 var switchCellsRequest = RequestDecoder.DecodeSwitchCellsRequest(eventArgs.Request);
 
