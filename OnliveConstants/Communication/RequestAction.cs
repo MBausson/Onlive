@@ -7,6 +7,10 @@ public enum RequestAction
     /// </summary>
     Unknown,
     /// <summary>
+    /// Used by a client to maintain UDP connection with a server
+    /// </summary>
+    Ping,
+    /// <summary>
     /// Used for a server request, providing board data to a client
     /// </summary>
     SendBoard,

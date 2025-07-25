@@ -2,7 +2,7 @@
 
 namespace OnliveConstants.Communication;
 
-public class RequestDecoder
+public static class RequestDecoder
 {
     public static RequestAction DecodeRequestAction(string request)
     {

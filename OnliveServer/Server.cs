@@ -8,7 +8,6 @@ namespace OnliveServer;
 public class Server
 {
     private readonly GameBoard _board = new();
-    private readonly string _ip = ServerConfiguration.Current.ServerIp;
     private readonly ILogger<Server> _logger = Logging.GetLogger<Server>();
     private readonly int _port = ServerConfiguration.Current.ServerPort;
 
@@ -16,7 +15,7 @@ public class Server
 
     public Server()
     {
-        _socket = new SocketServer(_ip, _port);
+        _socket = new SocketServer(_port);
         _socket.RequestReceived += OnRequestReceived;
 
         _ = UpdateGameBoardAsync();
@@ -24,9 +23,6 @@ public class Server
 
     public async Task StartAsync()
     {
-        _logger.LogInformation($"Server started on {_ip}:{_port}");
-
-        _ = SendGameBoardUpdatesAsync();
         await _socket.StartAsync();
     }
 
@@ -35,8 +31,12 @@ public class Server
         while (true)
         {
             await Task.Delay(300);
-
             _board.Update();
+
+            _ = _socket.SendToAllClientsAsync(_ => new SendBoardRequest
+            {
+                ActiveCells = _board.ActiveCells
+            }.ToRequestString());
         }
     }
 
@@ -55,6 +55,10 @@ public class Server
 
         switch (action)
         {
+            case RequestAction.Ping:
+                eventArgs.Client.LastPing = DateTimeOffset.Now;
+                break;
+
             case RequestAction.SwitchCells:
                 var switchCellsRequest = RequestDecoder.DecodeSwitchCellsRequest(eventArgs.Request);
 
@@ -71,17 +75,6 @@ public class Server
             default:
                 _logger.LogWarning($"Could not process request <{action}> => {eventArgs.Request}");
                 return;
-        }
-    }
-
-    private async Task SendGameBoardUpdatesAsync()
-    {
-        while (true)
-        {
-            await Task.Delay(300);
-
-            await _socket.SendToAllClientsAsync(client =>
-                new SendBoardRequest { ActiveCells = _board.ActiveCells }.ToRequestString());
         }
     }
 }

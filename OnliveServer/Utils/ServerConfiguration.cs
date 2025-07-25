@@ -5,7 +5,6 @@ namespace OnliveServer.Utils;
 
 public struct ServerConfiguration
 {
-    private const string DefaultServerIp = "127.0.0.1";
     private const int DefaultServerPort = 8001;
     private const LogLevel DefaultLogLevel = LogLevel.Debug;
 
@@ -17,9 +16,6 @@ public struct ServerConfiguration
 
     public static void SetFromCliArguments(string[] arguments)
     {
-        var serverIpOption = new Option<string>("--ip")
-            { Description = "The server's locale IP", DefaultValueFactory = _ => DefaultServerIp };
-
         var serverPortOption = new Option<int>("--port")
             { Description = "The server's socket port", DefaultValueFactory = _ => DefaultServerPort };
 
@@ -28,7 +24,6 @@ public struct ServerConfiguration
 
         var rootCommand = new RootCommand
         {
-            serverIpOption,
             serverPortOption,
             logLevelOption
         };
@@ -37,7 +32,6 @@ public struct ServerConfiguration
 
         Current = new ServerConfiguration
         {
-            ServerIp = result.GetRequiredValue(serverIpOption),
             ServerPort = result.GetRequiredValue(serverPortOption),
             LogLevel = result.GetRequiredValue(logLevelOption)
         };

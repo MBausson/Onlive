@@ -1,13 +1,17 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
 using OnliveConstants;
+using OnliveConstants.Requests;
 
 namespace OnliveServer;
 
-public class PlayerClient(TcpClient client)
+public class PlayerClient(IPEndPoint endPoint)
 {
-    public NetworkStream Stream { get; } = client.GetStream();
-    public Socket Socket { get; } = client.Client;
+    public IPEndPoint EndPoint { get; } = endPoint;
+
     public Position CurrentPosition { get; set; }
 
-    public bool Connected => client.Connected;
+    public DateTimeOffset LastPing { get; set; } = DateTimeOffset.Now;
+
+    public bool ShouldDisconnect =>
+        LastPing < DateTimeOffset.Now + TimeSpan.FromSeconds(PingRequest.ServerTimeout);
 }
