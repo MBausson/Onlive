@@ -9,7 +9,7 @@ Libraries / technologies: **SFML**, `TcpClient`
 ### Server
 
 This project provides a `Dockerfile` file, allowing you to easily deploy a server.
-The default port used is `8001` : this can be changed in the `Dockerfile`, via the application arguments.
+The default port used is `8001` : this can be changed in the `Dockerfile`, via the application arguments. The default game board update interval is `300ms` : this value can also be changed in the dockerfile.
 
 ### Client
 
@@ -39,10 +39,10 @@ Zoom-in and Zoom-out
 
 - Scroll up ; Scroll down
 
-**Note:** In order to easily switch several cells, you can enter in Stash mode, place some cells, and hit enter.  
+**Note:** In order to easily switch several cells, you can enter in Stash mode, place some cells, and hit enter.
 This will switch several cells at once.
 
 ## Game rules
 
-The game rules can be found on [this wikipedia page](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)  
-By default, the game's grid updates every `300ms`.  
+The game rules can be found on [this wikipedia page](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
+By default, the game's grid updates every `300ms`.

@@ -10,6 +10,7 @@ public class Server
     private readonly GameBoard _board = new();
     private readonly ILogger<Server> _logger = Logging.GetLogger<Server>();
     private readonly int _port = ServerConfiguration.Current.ServerPort;
+    private readonly int _updateInterval = ServerConfiguration.Current.UpdateInterval;
 
     private readonly SocketServer _socket;
 
@@ -30,7 +31,7 @@ public class Server
     {
         while (true)
         {
-            await Task.Delay(300);
+            await Task.Delay(_updateInterval);
             _board.Update();
 
             _ = _socket.SendToAllClientsAsync(_ => new SendBoardRequest
